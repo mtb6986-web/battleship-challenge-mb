@@ -47,4 +47,4 @@ hunting them.
 - `keeps hunting a touching ship after its neighbour sinks`
 - `never claims more cells than the sunk ship's length`
 
-**Fixing commit:** see `SAVEPOINTS.md` entry for "Normal AI sink attribution fixed".
+**Fixing commit:** `ec61e32` (found and fixed before the first UI existed).
