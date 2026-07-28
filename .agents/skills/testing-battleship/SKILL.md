@@ -36,15 +36,29 @@ Cheap assertions from the console:
 
 ## Known traps / possible bugs to re-check
 
-- **Click-to-place may not work.** Clicking a cell during placement can show the green
-  preview but never place the ship (observed on `devin/1785207000-battleship-vs-ai`).
-  Workarounds for continuing the test: the "Random placement" button, or keyboard
-  placement.
-- **Keyboard focus can be lost on every re-render.** Arrow keys/`R`/Enter only work while
-  a grid button has DOM focus; after a render (place, rotate) focus can fall to `BODY`
-  and the keys silently stop working. Press `Tab` ~7 times to land back on the first
-  grid cell. Also park the mouse pointer OFF the board — hover re-renders can steal focus.
+- **Click-to-place may stop working** if a hover handler re-renders the whole page: the
+  cell shows the green preview but the button is destroyed between mousedown and mouseup,
+  so no click ever fires. This was a real regression once (fixed by `paintPreview()`
+  toggling classes instead of re-rendering). If placement clicks do nothing, suspect a
+  `mouseenter` → `render()` path first. Workarounds to keep testing: "Random placement"
+  or keyboard placement.
+- **Keyboard focus can be lost on every re-render** for the same reason. Arrow keys/`R`/
+  Enter only work while a grid button has DOM focus. The current fix restores focus after
+  render via `data-focus-target` and listens for keydown on `document`. Always re-check:
+  arrows after a place, arrows after `R`, and arrows after moving the mouse over the board.
 - Verify with `document.activeElement` whenever a key press "does nothing".
+- When Enter/Space are intercepted globally for the grid, re-check that Enter on ordinary
+  buttons (especially **Play again**) does only that action and does not also fire a shot.
+
+## Fairness / "is the AI cheating?" testing
+
+- Strongest cheap test: hand-place the whole fleet into one corner region (e.g. all 17
+  cells in rows 9–10) with `?debug=1`, then log the AI's first ~10 shots. An honest AI
+  misses nearly all of them and spreads across the board.
+- `npm run selfplay` (1000 games/difficulty, ~1 min) prints averages; Easy ≈95, Normal
+  ≈52. A Normal average below ~35 means position leakage.
+- With a fixed `?seed=N`, consecutive games after "Play again" legitimately reproduce the
+  _same_ AI opening sequence — that is evidence of a full reset, not of retained memory.
 
 ## Clipboard (Copy log)
 
@@ -58,6 +72,12 @@ Chrome refuses windows narrower than ~500 CSS px, so `xdotool getactivewindow wi
 cannot reach 390px. Get as narrow as allowed and additionally `ctrl+plus` to shrink the
 effective CSS viewport. Assert `document.documentElement.scrollWidth <= clientWidth`
 (no horizontal overflow) and check cell `getBoundingClientRect()` is >= 24px.
+
+## Acceptance criteria
+
+SPEC.md Section 10 is a 16-item manual script and Section 11 requires a per-requirement
+acceptance table over Sections 4/5/6/8. Read them before planning; item 13 (three complete
+games back-to-back) is the one the owner cares most about and must not be shortened.
 
 ## Devin Secrets Needed
 
