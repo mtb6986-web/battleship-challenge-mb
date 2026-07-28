@@ -48,3 +48,51 @@ hunting them.
 - `never claims more cells than the sunk ship's length`
 
 **Fixing commit:** `ec61e32` (found and fixed before the first UI existed).
+
+---
+
+## BUG-002 — Clicking a square did not place a ship, and the keyboard switched itself off
+
+**Found by:** a human playing the game in a browser. Every automated check was
+green: 69 unit tests, lint, typecheck and build all passed while the single most
+common action in the game did not work.
+
+**Symptom.** Two apparently unrelated faults:
+
+1. On the placement screen, clicking a cell showed the green preview but never
+   placed the ship. Random placement and keyboard placement both worked, and
+   clicking buttons and firing at the enemy board worked, so it looked specific
+   to placement.
+2. After placing a ship or pressing `R`, the focus outline vanished and the arrow
+   keys, Enter and `R` stopped responding until roughly seven presses of Tab got
+   back onto the grid. Moving the mouse over the board did the same thing.
+
+**Repro.** Load the page, move the mouse onto a cell in "Your waters", click.
+Nothing is placed.
+
+**Root cause.** One mistake, showing up twice. To draw the green placement preview,
+the `mouseenter` handler called `render()`, which rebuilds the entire page.
+`mouseenter` fires on every mouse movement onto a cell, so the button the player
+was pressing was destroyed and replaced between `mousedown` and `mouseup`. A
+browser only reports a click when both halves land on the same element, so no
+click was ever reported.
+
+The same rebuild discarded whichever element had keyboard focus, dropping it to
+`<body>`. Because the key handler was attached to the app container rather than
+the document, keys stopped being heard entirely once focus escaped it.
+
+**Fix.**
+
+- `paintPreview()` re-styles the existing cells with `classList.toggle` instead of
+  rebuilding them, so hovering no longer destroys anything.
+- `render()` records whether focus was on a grid cell and restores it afterwards.
+- The key handler is attached to `document`, so arrow keys and `R` keep working
+  even if focus does drift. Enter and Space are only intercepted when focus is
+  genuinely on the grid, so ordinary buttons still behave normally.
+
+**Lesson worth keeping.** The whole test suite tests the rules engine, which was
+entirely innocent here. Nothing tested the wiring between a mouse and that engine.
+Statistical self-play proves the AI is sound; it says nothing about whether a
+person can operate the game. Both kinds of check are needed.
+
+**Fixing commit:** see `SAVEPOINTS.md`.

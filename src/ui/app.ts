@@ -1,6 +1,6 @@
 import { BOARD_SIZE, FLEET } from '../game/types';
 import type { Coord, Difficulty, Ship } from '../game/types';
-import { coordLabel, shipCells } from '../game/board';
+import { coordKey, coordLabel, shipCells } from '../game/board';
 import { Game } from '../game/engine';
 import { describeBoard, describeLogEntry, transcript } from './render';
 
@@ -27,7 +27,9 @@ export class App {
     private readonly options: AppOptions,
   ) {
     this.game = new Game(options.seed, 'normal');
-    this.root.addEventListener('keydown', this.onKeyDown);
+    // Listening on the document, not on the board, so the arrow keys and R keep
+    // working even when focus has drifted off the grid.
+    document.addEventListener('keydown', this.onKeyDown);
     this.render();
   }
 
@@ -138,9 +140,16 @@ export class App {
     }
 
     if (event.key === 'Enter' || event.key === ' ') {
+      // Only hijack Enter and Space when the player is on the board. Otherwise a
+      // button such as Play again would fire a shot as well as being clicked.
+      const onGrid =
+        document.activeElement instanceof HTMLElement && !!document.activeElement.dataset.coord;
+      if (!onGrid) return;
+
       event.preventDefault();
       if (snapshot.phase === 'placement') this.place(this.focus);
       else if (snapshot.phase === 'battle') this.fire(this.focus);
+      this.focusActiveCell();
     }
   };
 
@@ -151,8 +160,36 @@ export class App {
 
   // ------------------------------------------------------------------ display
 
+  /**
+   * Repaint the placement preview by re-styling the existing cells.
+   *
+   * This deliberately does not rebuild the board. Hovering fires on every mouse
+   * move, and replacing a cell between mousedown and mouseup cancels the click,
+   * which is what broke click-to-place and threw away keyboard focus (BUG-002).
+   */
+  private paintPreview(): void {
+    const snapshot = this.game.snapshot();
+    const next = this.game.nextShipToPlace;
+    if (snapshot.phase !== 'placement' || !next) return;
+
+    const preview = this.hover
+      ? new Set(shipCells(this.hover, next.length, snapshot.orientation).map(coordKey))
+      : new Set<string>();
+    const legal = this.hover ? this.game.canPlaceNext(this.hover) : false;
+
+    const board = this.root.querySelector('[data-board="human"]');
+    for (const cell of board?.querySelectorAll<HTMLElement>('[data-coord]') ?? []) {
+      const highlighted = preview.has(cell.dataset.coord ?? '');
+      cell.classList.toggle('preview-ok', highlighted && legal);
+      cell.classList.toggle('preview-bad', highlighted && !legal);
+    }
+  }
+
   private render(): void {
     const snapshot = this.game.snapshot();
+    // Rebuilding the board drops focus, so put the player back where they were.
+    const hadGridFocus =
+      document.activeElement instanceof HTMLElement && !!document.activeElement.dataset.coord;
     this.root.replaceChildren();
 
     this.root.append(this.header());
@@ -165,6 +202,8 @@ export class App {
 
     this.root.append(this.boards());
     if (snapshot.phase !== 'placement') this.root.append(this.logPanel());
+
+    if (hadGridFocus) this.focusActiveCell();
   }
 
   private header(): HTMLElement {
@@ -344,6 +383,7 @@ export class App {
     wrapper.append(
       this.boardPanel({
         title: 'Your waters',
+        boardKey: 'human',
         hint:
           snapshot.phase === 'placement'
             ? 'Click to place. Press R to rotate.'
@@ -362,12 +402,13 @@ export class App {
         onHover: (coord) => {
           if (snapshot.phase !== 'placement') return;
           this.hover = coord;
-          this.render();
+          this.paintPreview();
         },
         fleet: snapshot.humanFleetStatus,
       }),
       this.boardPanel({
         title: 'Enemy waters',
+        boardKey: 'ai',
         hint:
           snapshot.phase === 'placement'
             ? 'Hidden until the battle starts.'
@@ -392,6 +433,7 @@ export class App {
 
   private boardPanel(config: {
     title: string;
+    boardKey: 'human' | 'ai';
     hint: string;
     descriptors: ReturnType<typeof describeBoard>;
     interactive: boolean;
@@ -413,6 +455,7 @@ export class App {
     grid.className = `board${config.interactive ? '' : ' inert'}`;
     grid.setAttribute('role', 'grid');
     grid.setAttribute('aria-label', config.title);
+    grid.dataset.board = config.boardKey;
 
     grid.append(this.gridLabel(''));
     for (let col = 0; col < BOARD_SIZE; col += 1) {
@@ -429,6 +472,7 @@ export class App {
       cell.disabled = descriptor.disabled;
       cell.setAttribute('aria-label', descriptor.label);
       cell.dataset.cell = coordLabel(descriptor.coord);
+      cell.dataset.coord = coordKey(descriptor.coord);
 
       const isFocus =
         config.interactive &&

@@ -247,3 +247,46 @@ in-game tutorial or onboarding flow.
 
 If something here seems essential, ask. Do not add it. Every extra feature is
 another place this can break, and none of it is being graded.
+
+---
+
+## 10. Manual test script — run before every handoff
+
+Walk through all of it in a browser and report the results line by line. Anything
+that cannot be verified is marked UNVERIFIED with the reason. A false PASS is
+worse than an honest UNVERIFIED.
+
+1. Loads on a phone-width screen. Board readable and tappable.
+2. Place all five ships successfully.
+3. Ship hanging off the right edge → refused, and does **not** wrap onto the next row.
+4. Ship overlapping another → refused.
+5. Two ships touching each other → allowed.
+6. Rotate a ship sitting against an edge → clean refusal or clean nudge, never a broken state.
+7. "Random placement" twenty times rapidly → no crash, no freeze, five legal ships every time.
+8. Fire once, then click the same cell again → refused, turn not consumed.
+9. During the AI's turn, click three cells rapidly → no extra shot.
+10. Sink one enemy ship → announced by name, marked sunk in the fleet panel.
+11. Sink a ship whose last remaining cell is on the outer edge → sink detection still fires.
+12. Play through to a win, then to a loss. Both end screens correct.
+13. **Click "Play again" and play a complete second game.** Shot logs empty, all
+    ships restored, and the AI hunts from scratch rather than continuing near where
+    it left off. Then do it a **third** time.
+14. Reload mid-game → lands somewhere sane. [REV 8] A fresh placement phase is the
+    intended destination, not a bug.
+15. Load with `?debug=1` and play → the AI's shots do not walk straight onto the
+    player's ships. Early shots look like a genuine search.
+16. Inspect the enemy board in developer tools before firing → ship positions are
+    not visible. [REV 4] This covers casual inspection only; see Section 5.
+
+Item 13 is the one most likely to reveal a real bug. Do not skip or shorten it.
+
+## 11. Acceptance report — required before claiming completion
+
+One row per requirement in Sections 4, 5, 6 and 8:
+
+| Requirement | PASS / FAIL / NOT DONE / UNVERIFIED | File & line | How it was verified |
+
+- **Nothing gets PASS on the basis of reading the code.** Only on running it.
+- Anything not run is UNVERIFIED. That is an acceptable answer; a false PASS is not.
+- Append the full self-play statistics from Section 7.
+- List anything built that is not in this specification, and why.
