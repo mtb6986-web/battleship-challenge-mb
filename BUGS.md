@@ -95,4 +95,4 @@ entirely innocent here. Nothing tested the wiring between a mouse and that engin
 Statistical self-play proves the AI is sound; it says nothing about whether a
 person can operate the game. Both kinds of check are needed.
 
-**Fixing commit:** see `SAVEPOINTS.md`.
+**Fixing commit:** `c1ae6ee`.
