@@ -57,8 +57,8 @@ first.
 - A running shot log for both sides, in text, e.g. "You fired B7 — miss."
 - **`[REV 5]` The shot log is copy-pasteable and carries the seed.** A "Copy log"
   control emits the seed plus the full ordered shot list.
-  *Reason: a seed alone does not reproduce a live game, because the AI reacts to
-  the human's clicks, which differ every run. Seed + shot list does.*
+  _Reason: a seed alone does not reproduce a live game, because the AI reacts to
+  the human's clicks, which differ every run. Seed + shot list does._
 - A fleet status panel for both sides showing which ships remain afloat.
 - **While the AI is taking its turn, human clicks must be ignored entirely.** It
   must be impossible to fire twice by clicking fast. Block input, don't just hope.
@@ -76,8 +76,8 @@ first.
 **`[REV 8]` Reload behaviour.** Reloading the page mid-game intentionally returns
 to a fresh placement phase. There is no saved-game state, because local storage is
 out of scope (Section 9). This is correct behaviour, not a bug.
-*Reason: test item 14 ("lands somewhere sane") would otherwise read as a request
-for persistence, which Section 9 forbids.*
+_Reason: test item 14 ("lands somewhere sane") would otherwise read as a request
+for persistence, which Section 9 forbids._
 
 **`[REV 4]` Fairness requirement (reworded).**
 The AI's ship positions must not be **discoverable by casual inspection**: not in
@@ -90,8 +90,8 @@ on the player's own machine; anyone willing to set a breakpoint in a debugger ca
 read it. **True concealment requires a server, which is deliberately out of scope.**
 The `?debug=1` reveal toggle (Section 7) exists precisely because the data is
 present and can be rendered on demand.
-*Reason: the original wording promised something a backendless architecture cannot
-deliver, and contradicted the `?debug=1` requirement in the same brief.*
+_Reason: the original wording promised something a backendless architecture cannot
+deliver, and contradicted the `?debug=1` requirement in the same brief._
 
 ---
 
@@ -102,13 +102,13 @@ targeting behaviour. It must never repeat a cell and must never hang.
 
 **Normal:** classic hunt / target.
 
-*Hunt mode.* Fire at random among un-fired cells where `(row + column)` is odd.
+_Hunt mode._ Fire at random among un-fired cells where `(row + column)` is odd.
 This "parity" trick works because the smallest ship is 2 cells long, so it must
 cover at least one such cell — it halves the search space with no loss.
 **Fallback:** if no odd-parity un-fired cells remain, fall back to any un-fired
 cell. Do not crash, and do not loop forever looking for a cell that isn't there.
 
-*Target mode.* On a hit, queue that cell's four orthogonal neighbours — filtered
+_Target mode._ On a hit, queue that cell's four orthogonal neighbours — filtered
 to on-board cells not already fired at. Fire from that queue. Once two hits are
 confirmed in a line, work out the axis and extend along it in both directions
 until the ship sinks, ignoring the perpendicular neighbours.
@@ -122,19 +122,19 @@ accounted for by a sunk ship. When a ship sinks:
 3. Only when the unresolved-hit list is empty may the queue be cleared and hunt
    mode resumed.
 
-*Reason: the original instruction was "clear any queued targets that belonged to
+_Reason: the original instruction was "clear any queued targets that belonged to
 it", which is not knowable — ships may touch, so a queued cell may belong to a
 different, still-floating ship. Measured over 1,000 games, blindly clearing the
 queue on a sink costs ~3 extra shots per game (55.1 vs 51.9). It fails silently:
 nothing crashes, no test goes red, and the degraded result still falls inside the
-acceptance band.*
+acceptance band._
 
 **`[REV 6]` Known and accepted limitation.** Because ships may touch, two adjacent
 hits can belong to two different ships, so the axis lock can extend along a line
 that is not a single ship. The AI self-corrects on the next miss. This is accepted
 behaviour, not a defect.
 
-*What Normal is allowed to know:* the fleet composition (five ships, those
+_What Normal is allowed to know:_ the fleet composition (five ships, those
 lengths) and its own shot history. **Nothing else.** It must never read the human's
 ship positions, at any difficulty, for any reason, including "just to check."
 
@@ -145,22 +145,22 @@ ship positions, at any difficulty, for any reason, including "just to check."
 A script runnable with `npm run selfplay` plays each AI against a randomly-placed
 fleet 1,000 times with no UI and prints a table:
 
-| Metric | Expected |
-|---|---|
-| Games completed | exactly 1000 |
-| Crashes, hangs, or unfinished games | 0 |
-| Games exceeding 100 shots | 0 |
-| Games where the loser's hit count ≠ 17 | 0 |
-| Illegal shots (repeat or off-board) | 0 |
-| Illegal fleets generated (overlap / off-board / wrong lengths) | 0 |
-| Average shots to win — **Easy** | roughly 90–100 |
-| Average shots to win — **Normal** | **`[REV 1]` roughly 45–65** |
-| Fastest win, slowest win — Normal | report both |
+| Metric                                                         | Expected                    |
+| -------------------------------------------------------------- | --------------------------- |
+| Games completed                                                | exactly 1000                |
+| Crashes, hangs, or unfinished games                            | 0                           |
+| Games exceeding 100 shots                                      | 0                           |
+| Games where the loser's hit count ≠ 17                         | 0                           |
+| Illegal shots (repeat or off-board)                            | 0                           |
+| Illegal fleets generated (overlap / off-board / wrong lengths) | 0                           |
+| Average shots to win — **Easy**                                | roughly 90–100              |
+| Average shots to win — **Normal**                              | **`[REV 1]` roughly 45–65** |
+| Fastest win, slowest win — Normal                              | report both                 |
 
-`[REV 1]` *Reason: a reference implementation of exactly this algorithm measures
+`[REV 1]` _Reason: a reference implementation of exactly this algorithm measures
 51.9, which sits on the bottom edge of the original 50–70 band. A marginally better
 implementation would fall outside it and trigger a false alarm. The band needs
-headroom in the direction the algorithm actually varies.*
+headroom in the direction the algorithm actually varies._
 
 Report the actual numbers, not a pass/fail.
 
@@ -178,7 +178,7 @@ the ship positions and report it.
 **`[REV 2]` These thresholds apply to the 1,000-game average only — never to a
 single game.** In 1,000 measured honest games the fastest legitimate win was **21
 shots**. A single fast game is luck and is not evidence of cheating.
-*Reason: without this, one lucky live game reads as a critical bug.*
+_Reason: without this, one lucky live game reads as a critical bug._
 
 **Seeding.** A `seed` option on the harness and on the game (`?seed=42` in the URL)
 makes the same seed produce identical ship placement and an identical random-number
@@ -218,9 +218,9 @@ stay in the shipped build and are documented in the README.
 - **CI** (continuous integration — a robot that runs checks on every proposed
   change): a GitHub Actions workflow runs typecheck, lint, and the full test suite
   on every push and pull request.
-  *Reason: without it, every rule in `AGENTS.md` is honour-system.*
+  _Reason: without it, every rule in `AGENTS.md` is honour-system._
 - **ESLint + Prettier** are configured and enforced in CI.
-  *Reason: prevents style drift making later changes noisy and hard to review.*
+  _Reason: prevents style drift making later changes noisy and hard to review._
 
 **`[REV 9]` Accessibility — made concrete and therefore verifiable.**
 "Keyboard navigable" is replaced by:
@@ -233,7 +233,7 @@ stay in the shipped build and are documented in the README.
 - Visible focus indicator on the focused cell.
 - Usable on a phone-width screen with touch.
 
-*Reason: the original wording could not be marked done or not-done by anyone.*
+_Reason: the original wording could not be marked done or not-done by anyone._
 
 ---
 

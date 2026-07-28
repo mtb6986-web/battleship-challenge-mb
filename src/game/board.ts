@@ -17,9 +17,7 @@ export function parseCoordLabel(label: string): Coord | null {
 }
 
 export function inBounds(coord: Coord): boolean {
-  return (
-    coord.row >= 0 && coord.row < BOARD_SIZE && coord.col >= 0 && coord.col < BOARD_SIZE
-  );
+  return coord.row >= 0 && coord.row < BOARD_SIZE && coord.col >= 0 && coord.col < BOARD_SIZE;
 }
 
 export function sameCoord(a: Coord, b: Coord): boolean {
@@ -117,7 +115,8 @@ export function randomFleet(rng: Rng): Ship[] {
     const orientation: Orientation = rng.bool() ? 'horizontal' : 'vertical';
     const options = legalOrigins(shipClass.length, orientation, ships);
     // A five-ship fleet on a 10x10 board can never exhaust both orientations.
-    const fallback = options.length > 0 ? orientation : orientation === 'horizontal' ? 'vertical' : 'horizontal';
+    const fallback =
+      options.length > 0 ? orientation : orientation === 'horizontal' ? 'vertical' : 'horizontal';
     const origins = options.length > 0 ? options : legalOrigins(shipClass.length, fallback, ships);
     ships.push({
       name: shipClass.name,
@@ -171,11 +170,7 @@ export function resolveShot(ships: readonly Ship[], coord: Coord): FleetShotOutc
 }
 
 export type FleetValidationError =
-  | 'wrong-ship-count'
-  | 'wrong-length'
-  | 'off-board'
-  | 'overlap'
-  | 'wrong-total-cells';
+  'wrong-ship-count' | 'wrong-length' | 'off-board' | 'overlap' | 'wrong-total-cells';
 
 /** Independent checker used by the self-play harness to audit generated fleets. */
 export function validateFleet(ships: readonly Ship[]): FleetValidationError | null {

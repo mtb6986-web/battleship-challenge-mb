@@ -85,9 +85,9 @@ describe('rotation', () => {
     // Carrier lying horizontally at F1 (col 5..9). Rotating needs rows 0..4, which fits.
     const result = rotatedPlacement({ row: 0, col: 5 }, 5, 'horizontal', []);
     expect(result).not.toBeNull();
-    expect(shipCells(result!.origin, 5, result!.orientation).every((c) => c.row < 10 && c.col < 10)).toBe(
-      true,
-    );
+    expect(
+      shipCells(result!.origin, 5, result!.orientation).every((c) => c.row < 10 && c.col < 10),
+    ).toBe(true);
   });
 
   it('nudges a ship back on-board when rotating near the bottom edge', () => {

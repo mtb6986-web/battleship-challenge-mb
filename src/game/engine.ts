@@ -173,7 +173,13 @@ export class Game {
 
     this.humanShips = [
       ...this.humanShips,
-      { name: next.name, length: next.length, origin, orientation: this.orientationValue, hits: [] },
+      {
+        name: next.name,
+        length: next.length,
+        origin,
+        orientation: this.orientationValue,
+        hits: [],
+      },
     ];
     return true;
   }

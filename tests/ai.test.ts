@@ -115,7 +115,8 @@ describe('Normal opponent target mode', () => {
     opponent.observe(shot(4, 5, 'sunk', 'Destroyer'));
 
     const next = opponent.nextShot();
-    const adjacentToSunk = Math.abs(next.row - 4) + Math.min(Math.abs(next.col - 4), Math.abs(next.col - 5));
+    const adjacentToSunk =
+      Math.abs(next.row - 4) + Math.min(Math.abs(next.col - 4), Math.abs(next.col - 5));
     expect(adjacentToSunk === 0).toBe(false);
   });
 });
@@ -142,9 +143,7 @@ describe('BUG-001: sink attribution with touching ships', () => {
     expect(next.slice(0, 4).every(isNeighbourOfAHit)).toBe(true);
 
     // And specifically, the hit at (4,6) must not have been written off.
-    const chasedTheLiveHit = next.some(
-      (c) => Math.abs(c.row - 4) + Math.abs(c.col - 6) === 1,
-    );
+    const chasedTheLiveHit = next.some((c) => Math.abs(c.row - 4) + Math.abs(c.col - 6) === 1);
     expect(chasedTheLiveHit).toBe(true);
   });
 

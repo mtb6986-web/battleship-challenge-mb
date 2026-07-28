@@ -20,7 +20,7 @@ which should be impossible for a working targeting AI.
 **Root cause.** When a ship sank, the AI worked out which cells that ship had
 occupied by walking outward from the killing shot through its own record of
 unresolved hits. Because ships are allowed to touch, that walk could run straight
-through the killing shot and on into a *different, still-floating* ship that had
+through the killing shot and on into a _different, still-floating_ ship that had
 also been hit.
 
 The AI then marked those neighbouring hits as "accounted for", found its unresolved

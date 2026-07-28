@@ -292,7 +292,12 @@ describe('what the player is allowed to see', () => {
   });
 
   it("the AI's board view starts entirely unknown", () => {
-    expect(readyGame().snapshot().aiBoardView.flat().every((c) => c === 'unknown')).toBe(true);
+    expect(
+      readyGame()
+        .snapshot()
+        .aiBoardView.flat()
+        .every((c) => c === 'unknown'),
+    ).toBe(true);
   });
 
   it('reveals a whole ship footprint as sunk once it goes down', () => {
