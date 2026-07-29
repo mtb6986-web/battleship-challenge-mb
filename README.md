@@ -130,11 +130,14 @@ The build output is a folder of static files, so any static host works.
 npm run build   # writes dist/
 ```
 
-For **GitHub Pages**, the site is served from `/<repo-name>/` rather than the domain
-root, so the base path must be set or the page renders blank white:
+**GitHub Pages** is wired up in `.github/workflows/deploy.yml`: every push to `main`
+builds the site and publishes it, and it can also be run on demand from the Actions
+tab. Pages serves the site from `/<repo-name>/` rather than the domain root, so the
+workflow sets the base path — without it every asset 404s and the page renders blank
+white. To reproduce that build locally:
 
 ```bash
-VITE_BASE=/battleship/ npm run build
+VITE_BASE=/battleship-challenge-mb/ npm run build
 ```
 
 For **Netlify** or similar root-served hosts, no base path is needed.
